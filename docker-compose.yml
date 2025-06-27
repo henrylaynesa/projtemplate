@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:17
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
@@ -23,9 +23,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
-    environment:
-      - FLASK_APP=main.py
-      - FLASK_ENV=production
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
     volumes:
       - ./backend:/app
     restart: unless-stopped
