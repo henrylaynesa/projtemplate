@@ -87,17 +87,19 @@ projtemplate/
 │   │   ├── models.py       # SQLAlchemy models
 │   │   └── routes.py       # API routes
 │   ├── alembic/            # Database migrations
-│   ├── Dockerfile          # Backend container
+│   ├── Dockerfile          # Multi-stage Dockerfile
+│   ├── nginx.conf          # Nginx configuration
 │   ├── requirements.txt    # Python dependencies
-│   └── main.py            # Application entry point
+│   └── main.py             # Flask application entry point
 ├── frontend/               # React frontend application
 │   ├── src/               # Source code
 │   │   ├── App.tsx        # Main application component
 │   │   └── index.tsx      # Application entry point
 │   ├── public/            # Static assets
-│   ├── Dockerfile         # Frontend container
-│   └── package.json       # Node.js dependencies
-├── docker-compose.yml     # Multi-container setup
+│   └── Dockerfile          # Frontend Dockerfile
+├── docker-compose.yml      # Main compose file with profiles
+├── docker-compose.dev.yml  # Development-specific compose
+├── docker-compose.prod.yml # Production-specific compose
 ├── .gitignore            # Git ignore rules
 ├── .pre-commit-config.yaml # Pre-commit hooks
 └── README.md             # This file
@@ -155,27 +157,74 @@ alembic downgrade -1
 
 The project includes Docker configuration for easy development:
 
-### Services
+### Docker Setup
 
-- **PostgreSQL**: Database server on port 5432
-- **Backend**: Flask API server on port 5000
-- **Frontend**: React development server on port 3000
+#### Development Environment
 
-### Development with Docker
+For development with hot reloading and volume mounts:
 
 ```bash
-# Start all services with hot reloading
-docker-compose up --build
+# Start development environment
+docker compose up
 
-# View logs
-docker-compose logs -f [service-name]
-
-# Stop all services
-docker-compose down
-
-# Rebuild a specific service
-docker-compose build [service-name]
+# Or explicitly use development profile
+docker compose --profile dev up
 ```
+
+This will start:
+- PostgreSQL database (port 5432)
+- Backend with development stage (port 5000)
+- Frontend with development stage (port 3000)
+
+#### Production Environment
+
+For production with nginx reverse proxy:
+
+```bash
+# Start production environment
+docker compose --profile prod up
+
+# Or use the production-specific compose file
+docker compose -f docker-compose.prod.yml up
+```
+
+This will start:
+- PostgreSQL database (port 5432)
+- Backend with production stage (internal only)
+- Nginx reverse proxy (port 80)
+- Frontend with production stage (internal only)
+
+### Docker Stages
+
+#### Backend Dockerfile Stages
+
+1. **Development Stage** (`development`)
+   - Includes development dependencies
+   - Volume mounts for hot reloading
+   - Debug mode enabled
+   - Direct port exposure
+
+2. **Production Stage** (`production`)
+   - Optimized for production
+   - Non-root user for security
+   - Production environment variables
+   - Internal port only (no direct exposure)
+
+3. **Nginx Stage** (`nginx`)
+   - Alpine-based nginx
+   - Reverse proxy configuration
+   - Rate limiting and security headers
+   - Gzip compression
+
+#### Nginx Configuration
+
+The nginx configuration includes:
+- Reverse proxy to backend on port 5000
+- Rate limiting (10 requests/second with burst of 20)
+- Security headers
+- Gzip compression
+- Health check endpoint at `/health`
+- API routes under `/api/`
 
 ## 🔒 Environment Variables
 

@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:17
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: on-failure
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    expose:
+      - "5000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    expose:
+      - "3000"
+    depends_on:
+      - nginx
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
