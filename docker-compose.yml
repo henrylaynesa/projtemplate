@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:17
@@ -39,16 +37,36 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: development
     ports:
       - "3000:3000"
     restart: unless-stopped
     develop:
       watch:
         - action: sync
-          path: ./frontend
-          target: /app
+          path: ./frontend/src
+          target: /app/src
           ignore:
             - node_modules/
+        - action: sync
+          path: ./frontend/public
+          target: /app/public
+        - action: sync
+          path: ./frontend/index.html
+          target: /app/index.html
+        - action: sync
+          path: ./frontend/vite.config.ts
+          target: /app/vite.config.ts
+        - action: sync
+          path: ./frontend/tsconfig*.json
+          target: /app/
+        - action: rebuild
+          path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/package-lock.json
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
 
 volumes:
   postgres_data:

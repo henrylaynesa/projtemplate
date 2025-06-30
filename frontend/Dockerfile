@@ -1,20 +1,30 @@
-# Base image
-FROM node:20-alpine
+# Use Node.js 22 Alpine as base image
+FROM node:22-alpine AS base
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and lockfile
+# Copy package files
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Expose port
+# Development stage
+FROM base AS development
 EXPOSE 3000
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
-# Start development server
-CMD ["npm", "start"]
+# Build stage
+FROM base AS build
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine AS production
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
