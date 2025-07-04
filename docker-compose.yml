@@ -1,4 +1,4 @@
-# Main docker-compose file - use profiles for different environments
+# Main docker compose file - use profiles for different environments
 # Development: docker compose up
 # Production: docker compose --profile prod up
 

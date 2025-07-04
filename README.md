@@ -33,7 +33,7 @@ Before you begin, ensure you have the following installed:
 
 2. **Start all services**
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
 3. **Access the application**
@@ -185,7 +185,7 @@ For production with nginx reverse proxy:
 docker compose --profile prod up
 
 # Or use the production-specific compose file
-docker compose -f docker-compose.prod.yml up
+docker compose -f docker compose.prod.yml up
 ```
 
 This will start:
@@ -284,12 +284,12 @@ The built files will be in `frontend/build/` and can be served by any static fil
 
 1. **Build production images**
    ```bash
-   docker-compose -f docker-compose.prod.yml build
+   docker compose -f docker-compose.prod.yml build
    ```
 
 2. **Deploy**
    ```bash
-   docker-compose -f docker-compose.prod.yml up -d
+   docker compose -f docker-compose.prod.yml up -d
    ```
 
 ### Manual Deployment
